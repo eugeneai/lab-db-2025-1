@@ -365,3 +365,33 @@ ORDER BY created_at DESC;
 
 **Вывод:** Ваш подход лучше для данной задачи. Используйте упрощенную модель с заметками только о контактах.
 
+## Полученные диаграммы:
+### ER-диаграмма
+
+```mermaid
+erDiagram
+    CONTACT ||--o{ MEETING : has
+    CONTACT ||--o{ NOTE : has
+    
+    CONTACT {
+        integer contact_id PK "SERIAL"
+        varchar family_name
+        varchar work_place
+        varchar phone
+    }
+    
+    MEETING {
+        integer meeting_id PK "SERIAL"
+        integer contact_id FK
+        timestamp meeting_time
+        text topic
+        text place
+    }
+    
+    NOTE {
+        integer note_id PK "SERIAL"
+        integer contact_id FK
+        text note_text
+        timestamp created_at
+    }
+```
