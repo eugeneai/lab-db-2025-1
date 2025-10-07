@@ -395,3 +395,80 @@ erDiagram
         timestamp created_at
     }
 ```
+
+## Логическая модель в виде Диаграммы классов UML-2.4
+
+```mermaid
+classDiagram
+    class Contact {
+        +contact_id: Integer (PK)
+        +family_name: String
+        +work_place: String
+        +phone: String
+        +getMeetings() List~Meeting~
+        +getNotes() List~Note~
+    }
+    
+    class Meeting {
+        +meeting_id: Integer (PK)
+        +contact_id: Integer (FK)
+        +meeting_time: DateTime
+        +topic: String
+        +place: String
+        +getContact() Contact
+    }
+    
+    class Note {
+        +note_id: Integer (PK)
+        +contact_id: Integer (FK)
+        +note_text: String
+        +created_at: DateTime
+        +getContact() Contact
+    }
+    
+    Contact "1" -- "*" Meeting : имеет
+    Contact "1" -- "*" Note : содержит
+```
+
+## Физическая модель БД
+
+```mermaid
+erDiagram
+    contact {
+        integer contact_id PK "SERIAL"
+        varchar family_name "NOT NULL"
+        varchar work_place
+        varchar phone
+    }
+    
+    meeting {
+        integer meeting_id PK "SERIAL"
+        integer contact_id FK "NOT NULL"
+        timestamp meeting_time "NOT NULL"
+        text topic
+        text place
+    }
+    
+    note {
+        integer note_id PK "SERIAL"
+        integer contact_id FK "NOT NULL"
+        text note_text "NOT NULL"
+        timestamp created_at "DEFAULT CURRENT_TIMESTAMP"
+    }
+    
+    contact ||--o{ meeting : "FOREIGN KEY (contact_id) REFERENCES contact(contact_id)"
+    contact ||--o{ note : "FOREIGN KEY (contact_id) REFERENCES contact(contact_id)"
+```
+
+## Заключение
+
+В первой лаборной работе при помощи теоетического инстрментария проектирования БД и большой языковой модели "Дипсик" произведено проектирование ER-, логичсекой и физической модели (диаграмм) базы данных варианта 65. Основные замечания, решенные в ходе выполнения лабораторной работы:
+
+  1. Реализовано две итерации консультации с БЯМ;
+  2. БЯМ исправила три существенные ошибки проектирования (суррогатные индексы, перепроектирование ER, типы данных);
+  3. Суррогатные ключи позволяют стабилизировать структуру данных в базе данных;
+  4. Упрощена модель (уделен внешний ключ в Заметке).
+  5. Телефон следует записывать в текстовом формате.
+
+
+
