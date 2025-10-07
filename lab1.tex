@@ -1,0 +1,512 @@
+\documentclass[14pt]{extarticle}
+\usepackage{fontspec}
+\usepackage{geometry}
+\usepackage[english,russian]{babel}
+\usepackage{minted}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{indentfirst}
+\usepackage{setspace}
+\usepackage{hyperref}
+
+% TikZ для диаграмм
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning,er}
+
+% Стили для ключей в диаграммах
+\newcommand{\pk}[1]{\textbf{\textcolor{blue}{#1}}}
+\newcommand{\fkstyle}[1]{\textit{\textcolor{red}{#1}}}
+
+\setmainfont{Times New Roman}
+\setmonofont{Consolas}
+
+\geometry{a4paper,left=30mm,right=15mm,top=20mm,bottom=20mm}
+
+\onehalfspacing
+\parindent 1.25cm
+
+\definecolor{codebg}{rgb}{0.95,0.95,0.95}
+
+\titleformat{\section}{\normalfont\fontsize{16}{19}\bfseries\centering}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalfont\fontsize{14}{17}\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalfont\fontsize{14}{17}\itshape}{\thesubsubsection}{1em}{}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    {\fontsize{14}{16}\selectfont МИНИСТЕРСТВО НАУКИ И ВЫСШЕГО ОБРАЗОВАНИЯ РОССИЙСКОЙ ФЕДЕРАЦИИ}\\
+    {\fontsize{14}{16}\selectfont Федеральное государственное бюджетное образовательное учреждение}\\
+    {\fontsize{14}{16}\selectfont высшего образования}\\
+    {\fontsize{14}{16}\selectfont «ИРКУТСКИЙ ГОСУДАРСТВЕННЫЙ УНИВЕРСИТЕТ»}\\
+    \vspace{1cm}
+
+    {\fontsize{14}{16}\selectfont Факультет фундаментальной и прикладной информатики}\\
+    {\fontsize{14}{16}\selectfont Направление: 02.03.02 «Фундаментальная информатика и информационные технологии»}\\
+    \vspace{2cm}
+
+    {\fontsize{16}{19}\bfseries ОТЧЕТ}\\
+    {\fontsize{16}{19}\bfseries по лабораторной работе №1}\\
+    {\fontsize{16}{19}\bfseries «Проектирование информационной модели для реляционных баз данных»}\\
+    \vspace{1cm}
+
+    {\fontsize{14}{16}\selectfont Вариант 65}\\
+    \vspace{2cm}
+
+    \begin{flushright}
+        {\fontsize{14}{16}\selectfont Выполнил:}\\
+        {\fontsize{14}{16}\selectfont студент группы ФИИТ-XX-XX}\\
+        {\fontsize{14}{16}\selectfont Иванов И.И.}\\
+        \vspace{0.5cm}
+        {\fontsize{14}{16}\selectfont Проверил:}\\
+        {\fontsize{14}{16}\selectfont доцент кафедры ФИИТ}\\
+        {\fontsize{14}{16}\selectfont Петров П.П.}\\
+    \end{flushright}
+    \vfill
+
+    {\fontsize{14}{16}\selectfont Иркутск 2024}
+\end{titlepage}
+
+\section*{РЕФЕРАТ}
+
+Отчет по лабораторной работе №1: «Проектирование информационной модели для реляционных баз данных».
+
+\textbf{Количество страниц} - 8, \textbf{количество рисунков} - 3, \textbf{количество источников} - 2.
+
+\textbf{Ключевые слова}: БАЗЫ ДАННЫХ, ER-МОДЕЛЬ, ЛОГИЧЕСКАЯ МОДЕЛЬ, ФИЗИЧЕСКАЯ МОДЕЛЬ, POSTGRESQL, НОРМАЛИЗАЦИЯ, СУРОГАТНЫЙ КЛЮЧ.
+
+\textbf{Объект исследования}: процесс проектирования реляционной базы данных для системы учета контактов и взаимодействий (личная CRM).
+
+\textbf{Цель работы}: разработка корректной информационной модели базы данных, соответствующей требованиям реляционной теории и нормальных форм.
+
+\textbf{Методы исследования}: анализ предметной области, проектирование ER-модели, преобразование в логическую и физическую модели, нормализация базы данных.
+
+\textbf{Основные результаты}: разработана трехуровневая модель базы данных, устранены критические ошибки проектирования, созданы диаграммы для визуализации структуры базы данных.
+
+\tableofcontents
+
+\section{ВВЕДЕНИЕ}
+
+Современные информационные системы требуют тщательного проектирования структур хранения данных. Реляционные базы данных остаются одним из наиболее распространенных подходов к организации хранения структурированной информации. Правильное проектирование схемы базы данных является критически важным этапом, определяющим эффективность, надежность и масштабируемость всей информационной системы.
+
+В данной лабораторной работе рассматривается процесс проектирования базы данных для системы учета контактов и взаимодействий (личной CRM). Такой тип систем широко используется для управления персональными и деловыми контактами, планирования встреч и ведения истории взаимодействий.
+
+Цель работы заключается в разработке корректной информационной модели, соответствующей требованиям реляционной теории и нормальных форм. Для достижения этой цели необходимо решить следующие задачи:
+
+\begin{enumerate}
+    \item Проанализировать предметную область и требования к системе
+    \item Разработать ER-модель базы данных
+    \item Преобразовать ER-модель в логическую модель
+    \item Спроектировать физическую модель для СУБД PostgreSQL
+    \item Провести нормализацию базы данных
+    \item Визуализировать результаты с помощью диаграмм
+\end{enumerate}
+
+В работе использован итерационный подход к проектированию с привлечением современных инструментов визуализации и анализа.
+
+\section{ПОСТАНОВКА ЗАДАЧИ}
+
+\subsection{Техническое задание}
+
+Разработать информационную модель базы данных для системы «Учет контактов и взаимодействий (личная CRM)» со следующими характеристиками:
+
+\textbf{Сущности системы}:
+\begin{itemize}
+    \item Контакты (ФИО, место работы, телефон)
+    \item Встречи (дата, тема, место)
+    \item Заметки (дата, текст заметки по контакту)
+\end{itemize}
+
+\textbf{Бизнес-процессы}: регистрация всех встреч и важных событий, связанных с контактами.
+
+\textbf{Ограничения предметной области}:
+\begin{enumerate}
+    \item С одним контактом можно организовать несколько встреч
+    \item Встречи происходят только с одним контактом
+    \item Система предполагает использование СУБД PostgreSQL
+\end{enumerate}
+
+\textbf{Выходные документы}:
+\begin{enumerate}
+    \item Список предстоящих встреч на неделю с указанием контактов и тем, отсортированный по дате и времени
+    \item История всех встреч и заметок для заданного контакта, отсортированная по дате
+\end{enumerate}
+
+\subsection{Исходная модель}
+
+Первоначально была предложена следующая модель базы данных:
+
+\begin{minted}[bgcolor=codebg,fontsize=\small]{sql}
+Contact(family_name, work_place, phone) -- первичный ключ: phone
+Meeting(contact_phone, meeting_time, topic, place) -- первичный ключ: meeting_time
+Note(pk, contact_phone, meeting_time, note) -- вторичный ключ: (contact_phone, meeting_time)
+\end{minted}
+
+Типы данных для атрибутов:
+\begin{itemize}
+    \item \texttt{family\_name::varchar}
+    \item \texttt{work\_place::varchar}
+    \item \texttt{phone::Decimal(10)}
+    \item \texttt{meeting\_time::datetime}
+    \item \texttt{topic::text}
+    \item \texttt{place::text}
+    \item \texttt{pk::integer}
+    \item \texttt{contact\_phone::Decimal(10)}
+    \item \texttt{note:text}
+\end{itemize}
+
+\section{МЕТОДОЛОГИЯ ПРОЕКТИРОВАНИЯ}
+
+Проектирование базы данных выполнялось с использованием трехуровневой архитектуры:
+
+\subsection{Уровень 1: Концептуальное проектирование}
+
+На данном уровне разрабатывается ER-модель (Entity-Relationship model), которая описывает сущности предметной области и отношения между ними без привязки к конкретной СУБД.
+
+\subsection{Уровень 2: Логическое проектирование}
+
+Преобразование ER-модели в реляционную схему с определением таблиц, атрибутов, первичных и внешних ключей.
+
+\subsection{Уровень 3: Физическое проектирование}
+
+Реализация логической модели в конкретной СУБД (PostgreSQL) с определением типов данных, индексов, ограничений.
+
+Для визуализации моделей использовался язык Mermaid, поддерживаемый системой GitHub в файлах README.md.
+
+\section{РЕЗУЛЬТАТЫ И ОБСУЖДЕНИЕ}
+
+\subsection{Анализ исходной модели}
+
+При анализе первоначальной модели были выявлены следующие критические проблемы:
+
+\begin{enumerate}
+    \item \textbf{Некорректный выбор первичных ключей}: использование телефонного номера и времени встречи в качестве первичных ключей нарушает принципы реляционного проектирования
+    \item \textbf{Нарушение нормальных форм}: наличие транзитивных зависимостей в таблице заметок
+    \item \textbf{Некорректные типы данных}: использование числового типа для хранения телефонных номеров
+    \item \textbf{Избыточная сложность}: жесткая привязка заметок одновременно к контактам и встречам
+\end{enumerate}
+
+\subsection{Корректировка модели}
+
+В процессе итерационного проектирования с привлечением экспертной системы были внесены следующие исправления:
+
+\subsubsection{Введение суррогатных ключей}
+
+Вместо естественных ключей (\texttt{phone}, \texttt{meeting\_time}) введены суррогатные ключи (\texttt{contact\_id}, \texttt{meeting\_id}):
+
+\begin{minted}[bgcolor=codebg,fontsize=\small]{sql}
+-- Было: Contact(phone, family_name, work_place)
+-- Стало: Contact(contact_id, family_name, work_place, phone)
+
+-- Было: Meeting(contact_phone, meeting_time, topic, place)
+-- Стало: Meeting(meeting_id, contact_id, meeting_time, topic, place)
+\end{minted}
+
+\subsubsection{Корректировка типов данных}
+
+\begin{minted}[bgcolor=codebg,fontsize=\small]{sql}
+-- Было: phone::Decimal(10)
+-- Стало: phone VARCHAR(20)
+
+-- Было: meeting_time::datetime
+-- Стало: meeting_time TIMESTAMP
+\end{minted}
+
+\subsubsection{Упрощение структуры заметок}
+
+Упрощена структура таблицы заметок путем удаления обязательной привязки к встречам:
+
+\begin{minted}[bgcolor=codebg,fontsize=\small]{sql}
+-- Было: Note(pk, contact_phone, meeting_time, note)
+-- Стало: Note(note_id, contact_id, note_text, created_at)
+\end{minted}
+
+\subsection{ER-модель}
+
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=2cm,
+    auto,
+    entity/.style={rectangle, draw=blue!50, fill=blue!20, thick, minimum width=3cm, minimum height=1cm, align=center},
+    relationship/.style={diamond, draw=red!50, fill=red!20, thick, minimum size=1cm, align=center},
+    arrow/.style={->, >=stealth', shorten >=1pt, thick}
+]
+
+% Сущности
+\node[entity] (contact) {CONTACT \\ \scriptsize integer contact\_id PK \\ \scriptsize varchar family\_name \\ \scriptsize varchar work\_place \\ \scriptsize varchar phone};
+\node[entity, below left=2cm and 1cm of contact] (meeting) {MEETING \\ \scriptsize integer meeting\_id PK \\ \scriptsize integer contact\_id FK \\ \scriptsize timestamp meeting\_time \\ \scriptsize text topic \\ \scriptsize text place};
+\node[entity, below right=2cm and 1cm of contact] (note) {NOTE \\ \scriptsize integer note\_id PK \\ \scriptsize integer contact\_id FK \\ \scriptsize text note\_text \\ \scriptsize timestamp created\_at};
+
+% Связи
+\draw[arrow] (contact) -- node[pos=0.3, above, sloped] {1} node[pos=0.7, above, sloped] {N} (meeting);
+\draw[arrow] (contact) -- node[pos=0.3, above, sloped] {1} node[pos=0.7, above, sloped] {N} (note);
+
+% Подписи отношений
+\node[above=0.5cm of meeting] {\small has};
+\node[above=0.5cm of note] {\small has};
+
+\end{tikzpicture}
+\caption{ER-диаграмма базы данных}
+\label{fig:er-diagram-tikz}
+\end{figure}
+
+\subsection{Логическая модель}
+
+\begin{figure}[H]\scalebox{0.7}{
+\centering
+\begin{tikzpicture}[
+    node distance=1.5cm,
+    auto,
+    class/.style={rectangle, draw=green!50, fill=green!10, thick, minimum width=4cm, minimum height=2cm, align=left},
+    association/.style={->, >=stealth', shorten >=1pt, thick, dashed}
+]
+
+% Классы
+\node[class] (contact) {
+\textbf{Contact}\\
++ contact\_id: Integer (PK)\\
++ family\_name: String\\
++ work\_place: String\\
++ phone: String\\
++ getMeetings(): List<Meeting>\\
++ getNotes(): List<Note>
+};
+
+\node[class, below left=of contact] (meeting) {
+\textbf{Meeting}\\
++ meeting\_id: Integer (PK)\\
++ contact\_id: Integer (FK)\\
++ meeting\_time: DateTime\\
++ topic: String\\
++ place: String\\
++ getContact(): Contact
+};
+
+\node[class, below right=of contact] (note) {
+\textbf{Note}\\
++ note\_id: Integer (PK)\\
++ contact\_id: Integer (FK)\\
++ note\_text: String\\
++ created\_at: DateTime\\
++ getContact(): Contact
+};
+
+% Ассоциации
+\draw[association] (meeting) -- node[pos=0.5, above, sloped] {1} (contact);
+\draw[association] (note) -- node[pos=0.5, above, sloped] {1} (contact);
+
+% Мультипликаторы
+\node[above left=0.2cm and 0.2cm of meeting] {\small *};
+\node[above right=0.2cm and 0.2cm of note] {\small *};
+
+% Подписи отношений
+\node[above=0.3cm of meeting] {\small имеет};
+\node[above=0.3cm of note] {\small содержит};
+
+\end{tikzpicture}}
+\caption{Логическая модель в виде диаграммы классов UML}
+\label{fig:logical-model-tikz}
+\end{figure}
+
+\subsection{Физическая модель}
+
+\begin{figure}[H]
+\centering\scalebox{0.5}{
+\begin{tikzpicture}[
+    node distance=1.5cm,
+    auto,
+    table/.style={rectangle, draw=orange!50, fill=orange!10, thick, minimum width=6cm, minimum height=1.5cm, align=left},
+    fk/.style={->, >=stealth', shorten >=1pt, thick, red},
+    pk/.style={font=\bfseries\color{blue}},
+    fkstyle/.style={font=\itshape\color{red}}
+]
+
+% Таблицы
+\node[table] (contact) {
+\textbf{contact}\\
+\pk{contact\_id} SERIAL PRIMARY KEY\\
+family\_name VARCHAR(100) NOT NULL\\
+work\_place VARCHAR(100)\\
+phone VARCHAR(20)
+};
+
+\node[table, below=of contact] (meeting) {
+\textbf{meeting}\\
+\pk{meeting\_id} SERIAL PRIMARY KEY\\
+\fkstyle{contact\_id} INTEGER NOT NULL FK\\
+meeting\_time TIMESTAMP NOT NULL\\
+topic TEXT\\
+place TEXT
+};
+
+\node[table, below=of meeting] (note) {
+\textbf{note}\\
+\pk{note\_id} SERIAL PRIMARY KEY\\
+\fkstyle{contact\_id} INTEGER NOT NULL FK\\
+note\_text TEXT NOT NULL\\
+created\_at TIMESTAMP DEFAULT CURRENT\_TIMESTAMP
+};
+
+% Внешние ключи
+\draw[fk] (meeting.west) to[out=180,in=180] node[pos=0.5, left] {FOREIGN KEY (contact\_id) REFERENCES contact(contact\_id)} (contact.west);
+\draw[fk] (note.west) to[out=180,in=180] node[pos=0.5, left] {FOREIGN KEY (contact\_id) REFERENCES contact(contact\_id)} (contact.west);
+
+% Индексы
+\node[below right=0.5cm and 0.5cm of meeting] {\small \textbf{Индексы:}};
+\node[below right=1cm and 0.5cm of meeting] {\small idx\_meeting\_time ON Meeting(meeting\_time)};
+\node[below right=1.5cm and 0.5cm of meeting] {\small idx\_note\_contact\_created ON Note(contact\_id, created\_at)};
+
+\end{tikzpicture}}
+\caption{Физическая модель базы данных}
+\label{fig:physical-model-tikz}
+\end{figure}
+
+\subsection{Нормализация базы данных}
+
+Проведена проверка соответствия нормальным формам:
+
+\subsubsection{Первая нормальная форма (1NF)}
+Все атрибуты содержат атомарные значения, повторяющиеся группы отсутствуют.
+
+\subsubsection{Вторая нормальная форма (2NF)}
+Все неключевые атрибуты полностью зависят от целого первичного ключа.
+
+\subsubsection{Третья нормальная форма (3NF)}
+Отсутствуют транзитивные зависимости неключевых атрибутов от неключевых.
+
+\subsubsection{Нормальная форма Бойса-Кодда (BCNF)}
+Каждый детерминант является потенциальным ключом.
+
+\subsection{Реализация бизнес-требований}
+
+Разработаны SQL-запросы для формирования требуемых выходных документов:
+
+\subsubsection{Список предстоящих встреч на неделю}
+
+\begin{minted}[bgcolor=codebg,fontsize=\small]{sql}
+SELECT
+    c.family_name,
+    m.meeting_time,
+    m.topic,
+    m.place
+FROM Meeting m
+JOIN Contact c ON m.contact_id = c.contact_id
+WHERE m.meeting_time >= CURRENT_DATE
+  AND m.meeting_time < CURRENT_DATE + INTERVAL '7 days'
+ORDER BY m.meeting_time;
+\end{minted}
+
+\subsubsection{История встреч и заметок для контакта}
+
+\begin{minted}[bgcolor=codebg,fontsize=\small]{sql}
+SELECT
+    m.meeting_time AS event_date,
+    'Meeting' AS event_type,
+    'Тема: ' || m.topic AS event_description,
+    m.place AS details
+FROM Meeting m
+WHERE m.contact_id = 1
+
+UNION ALL
+
+SELECT
+    n.created_at AS event_date,
+    'Note' AS event_type,
+    n.note_text AS event_description,
+    NULL AS details
+FROM Note n
+WHERE n.contact_id = 1
+
+ORDER BY event_date DESC;
+\end{minted}
+
+\section{ЗАКЛЮЧЕНИЕ}
+
+В ходе выполнения лабораторной работы была успешно разработана информационная модель базы данных для системы учета контактов и взаимодействий. Основные достижения и выводы:
+
+\begin{enumerate}
+    \item \textbf{Устранены критические ошибки проектирования}: заменены естественные ключи на суррогатные, что обеспечило стабильность структуры данных при изменениях бизнес-информации
+
+    \item \textbf{Оптимизирована структура данных}: упрощена модель хранения заметок, что повысило гибкость системы и упростило запросы
+
+    \item \textbf{Обеспечено соответствие нормальным формам}: проведена полная нормализация базы данных до BCNF, что гарантирует отсутствие аномалий при операциях обновления
+
+    \item \textbf{Создана комплексная документация}: разработаны трехуровневые диаграммы (ER-модель, логическая модель, физическая модель), обеспечивающие наглядное представление структуры базы данных
+
+    \item \textbf{Реализованы бизнес-требования}: разработаны эффективные SQL-запросы для формирования требуемых выходных документов
+\end{enumerate}
+
+Полученная модель демонстрирует соответствие лучшим практикам реляционного проектирования и обеспечивает надежную основу для реализации системы личной CRM. Рекомендуется использовать разработанную модель в качестве основы для дальнейшей реализации приложения.
+
+\section{СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ}
+
+\begin{enumerate}
+    \item Дейт К. Дж. Введение в системы баз данных. — 8-е изд. — М.: Вильямс, 2005. — 1328 с.
+    \item PostgreSQL 16.2 Documentation [Электронный ресурс]. — Режим доступа: https://www.postgresql.org/docs/16/index.html (дата обращения: 10.11.2024).
+\end{enumerate}
+
+\end{document}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=1cm,
+    auto,
+    box/.style={rectangle, draw=black!50, thick, minimum width=3cm, minimum height=0.8cm, align=center},
+    title/.style={font=\bfseries, align=center},
+    connector/.style={->, >=stealth', shorten >=1pt, thick, blue}
+]
+
+% Заголовок
+\node[title] (mainTitle) at (0,0) {Таблицы базы данных};
+
+% CONTACT таблица
+\node[title] (contactTitle) at (-4,-1) {Таблица: contact};
+\node[box] (contact1) at (-4,-2) {contact\_id: SERIAL PRIMARY KEY};
+\node[box] (contact2) at (-4,-3) {family\_name: VARCHAR NOT NULL};
+\node[box] (contact3) at (-4,-4) {work\_place: VARCHAR};
+\node[box] (contact4) at (-4,-5) {phone: VARCHAR};
+
+% MEETING таблица
+\node[title] (meetingTitle) at (0,-1) {Таблица: meeting};
+\node[box] (meeting1) at (0,-2) {meeting\_id: SERIAL PRIMARY KEY};
+\node[box] (meeting2) at (0,-3) {contact\_id: INTEGER NOT NULL FK};
+\node[box] (meeting3) at (0,-4) {meeting\_time: TIMESTAMP NOT NULL};
+\node[box] (meeting4) at (0,-5) {topic: TEXT};
+\node[box] (meeting5) at (0,-6) {place: TEXT};
+
+% NOTE таблица
+\node[title] (noteTitle) at (4,-1) {Таблица: note};
+\node[box] (note1) at (4,-2) {note\_id: SERIAL PRIMARY KEY};
+\node[box] (note2) at (4,-3) {contact\_id: INTEGER NOT NULL FK};
+\node[box] (note3) at (4,-4) {note\_text: TEXT NOT NULL};
+\node[box] (note4) at (4,-5) {created\_at: TIMESTAMP DEFAULT NOW};
+
+% Связи
+\draw[connector] (meeting2) -- ++(0,-0.5) -| (contact1);
+\draw[connector] (note2) -- ++(0,-0.5) -| (contact1);
+
+% Подписи связей
+\node[title] at (-2,-7) {Связи 1:N};
+\node[title] at (2,-7) {Индексы};
+\node[align=left] at (2,-7.5) {idx\_meeting\_time};
+\node[align=left] at (2,-8) {idx\_note\_contact\_created};
+
+% Группировка
+\draw[rounded corners, dashed] (-5.5,0.5) rectangle (5.5,-8.5);
+
+\end{tikzpicture}
+\caption{Детализированная схема базы данных}
+\label{fig:detailed-schema-tikz}
+\end{figure}
+
+
+
+%%% Local Variables:
+%%% mode: LaTeX
+%%% TeX-master: t
+%%% End:
