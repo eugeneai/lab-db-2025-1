@@ -438,6 +438,40 @@ ORDER BY m.meeting_time;
 
 <img width="863" height="85" alt="image" src="https://github.com/user-attachments/assets/026bcd5c-4657-4909-a0e9-bf8e047f9911" />
 
+### Vew для этого запроса 
+
+```sql
+-- Выдать список предстоящих встреч на неделю 
+-- с указанием контактов и тем, отсортированный по дате и времени.
+CREATE OR REPLACE VIEW two_weeks_meetings
+AS
+SELECT 
+    m.meeting_time as "Дата и время",
+    c.family_name as "Контакт",
+    m.topic as "Тема",
+    m.place as "Место"
+FROM eugeneai.Meeting m
+JOIN eugeneai.Contact c ON m.contact_id = c.id
+WHERE m.meeting_time BETWEEN CURRENT_DATE - INTERVAL '7 days' AND CURRENT_DATE + INTERVAL '7 days'
+ORDER BY m.meeting_time;
+```
+
+**Проверка**
+
+```sql
+SELECT * FROM eugeneai.two_weeks_meetings
+WHERE "Контакт" LIKE 'S%m%';
+```
+
+```text
+Дата и время	Контакт	Тема	Место
+2025-11-11 12:41:09.029324	Sam Clinton	Подготовка научной статьи	Washington DC, 1st str., 28-51
+2025-11-11 12:41:53.276792	Sam Clinton	Проведение экспериментов на животных	Washington DC, 1st str., lab. 20
+```
+
+<img width="736" height="51" alt="image" src="https://github.com/user-attachments/assets/56231afa-a0c1-4fb6-935d-ea33d15600f9" />
+
+
 
 Ссылка на чат: https://chat.deepseek.com/share/qsw0aj5ur8x724w3mk
 
