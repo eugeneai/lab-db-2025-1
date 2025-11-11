@@ -394,6 +394,27 @@ ORDER BY family_name;
 
 *Проект разработан для PostgreSQL 12+. Последнее обновление: ${current_date}*
 
+## Выполнение запросов вручную
+
+>> Выдать список предстоящих встреч на неделю с указанием контактов и тем, отсортированный по дате и времени.
+
+```sql
+SELECT c.family_name AS "ФИО", c.work_place AS "Учреждение", c.phone AS "Тел.",
+m.topic AS "Тема", m.place AS "Место", m.meeting_time
+FROM eugeneai.meeting AS m
+JOIN eugeneai.contact AS c ON c.id = m.contact_id 
+WHERE m.meeting_time BETWEEN '2025-11-11 12:41:00' AND '2025-11-11 12:41:59'
+ORDER BY m.meeting_time;
+```
+
+^ФИО	^Учреждение	^Тел.	^Тема	^Место	meeting_time^
+-----
+|Sam Clinton	|МИТ	+1(234)5678900	|Подготовка научной статьи	|Washington DC, 1st str., 28-51	|2025-11-11 12:41:09.029324|
+|Sam Clinton	|МИТ	+1(234)5678900	|Проведение экспериментов на животных	|Washington DC, 1st str., lab. 20	|2025-11-11 12:41:53.276792|
+---
+<img width="932" height="51" alt="image" src="https://github.com/user-attachments/assets/a22bf64d-f29f-4ac6-bc43-b871c7a8da75" />
+
+
 Ссылка на чат: https://chat.deepseek.com/share/qsw0aj5ur8x724w3mk
 
 
