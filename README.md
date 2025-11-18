@@ -471,6 +471,76 @@ WHERE "Контакт" LIKE 'S%m%';
 
 <img width="736" height="51" alt="image" src="https://github.com/user-attachments/assets/56231afa-a0c1-4fb6-935d-ea33d15600f9" />
 
+## Процедуры и функции PL/PGSQL
+
+Процедура, аналогичная представлению ```two_weeks_meetings``` - возвращает множество строк - встречи с клиентами за интервал времени. Интервал времени задается переметрами ```start_date``` и ```end_date```. Параметры могут быть ```NULL```, в этом случае предусмотрено поведение по умолчанию.
+
+```sql
+CREATE OR REPLACE FUNCTION eugeneai.get_meetings_with_stats(
+    start_date DATE DEFAULT NULL,
+    end_date DATE DEFAULT NULL
+)
+RETURNS TABLE(
+    "Дата и время" TIMESTAMP,
+    "Контакт" VARCHAR(100),
+    "Тема" TEXT,
+    "Место" TEXT,
+    "Всего встреч" BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    total_meetings BIGINT;
+BEGIN
+    -- Если параметры не переданы, используем интервал по умолчанию
+    IF start_date IS NULL THEN
+        start_date := CURRENT_DATE;
+    END IF;
+    
+    IF end_date IS NULL THEN
+        end_date := CURRENT_DATE + INTERVAL '7 days';
+    END IF;
+    
+    -- Подсчет общего количества встреч в интервале
+    SELECT COUNT(*) INTO total_meetings
+    FROM eugeneai.meeting m
+    WHERE m.meeting_time::DATE BETWEEN start_date AND end_date;
+    
+    RETURN QUERY
+    SELECT 
+        m.meeting_time as "Дата и время",
+        c.family_name as "Контакт", 
+        m.topic as "Тема",
+        m.place as "Место",
+        total_meetings as "Всего встреч"
+    FROM eugeneai.meeting m
+    JOIN eugeneai.contact c ON m.contact_id = c.id
+    WHERE m.meeting_time::DATE BETWEEN start_date AND end_date
+    ORDER BY m.meeting_time;
+    
+END;
+$$;
+```
+
+**Пример использования** фуруции ```eugeneai.get_meetings_with_stats```:
+
+```sql
+SELECT * FROM eugeneai.get_meetings_with_stats('2025-11-9', '2025-11-17');
+```
+- выборка встреч за прошлую неделю (от момента вписания этой строки в отчет).
+
+Результат:
+
+```csv
+Дата и время	Контакт	Тема	Место	Всего встреч
+2025-11-11 12:41:09.029324	Sam Clinton	Подготовка научной статьи	Washington DC, 1st str., 28-51	4
+2025-11-11 12:41:53.276792	Sam Clinton	Проведение экспериментов на животных	Washington DC, 1st str., lab. 20	4
+2025-11-11 12:42:51.366582	John Lee	Продление контракта с НАСА	New-York, 30th ave., N 20-45	4
+2025-11-11 12:43:41.886128	John Wang	Обсуждение результатов скдебного заседания от 2025-11-11	New-York, 30th ave., N 20-45	4
+```
+
+<img width="957" height="85" alt="image" src="https://github.com/user-attachments/assets/b51e703c-a1b6-44d4-9046-6c00c908dcb0" />
+
 ## Анализ на 4НФ, 5НФ, Индексы
 
 ## Проверка 4НФ (Четвертая нормальная форма)
